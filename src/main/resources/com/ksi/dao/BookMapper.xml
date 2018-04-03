@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ksi.dao.BookMapper">
+	<resultMap id="BaseResultMap" type="com.ksi.model.Book">
+		<id column="Pk_Book_Id" jdbcType="INTEGER" property="pkBookId" />
+		<result column="Name" jdbcType="VARCHAR" property="name" />
+		<result column="ISBN" jdbcType="VARCHAR" property="isbn" />
+		<collection property="authors" javaType="java.util.ArrayList" ofType="com.ksi.model.Author" select="selectAuthor" column="Pk_Book_Id"></collection>
+	</resultMap>
+	
+	<sql id="Example_Where_Clause">
+		<where>
+			<foreach collection="oredCriteria" item="criteria" separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" prefixOverrides="and" suffix=")">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value} and
+									#{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach close=")" collection="criterion.value" item="listItem"
+										open="(" separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	
+	<sql id="Base_Column_List">
+		Pk_Book_Id, Name, ISBN
+	</sql>
+	
+	<select id="selectByExample" parameterType="com.ksi.model.BookExample" resultMap="BaseResultMap">
+		select
+		<if test="distinct">
+			distinct
+		</if>
+		'false' as QUERYID,
+		<include refid="Base_Column_List" />
+		from Book
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+		<if test="orderByClause != null">
+			order by ${orderByClause}
+		</if>
+	</select>
+	
+	<select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		select <include refid="Base_Column_List" />
+		from Book
+		where Pk_Book_Id = #{pkBookId,jdbcType=INTEGER}
+	</select>
+	
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from Book
+		where Pk_Book_Id = #{pkBookId,jdbcType=INTEGER}
+	</delete>
+	
+	<insert id="insert" parameterType="com.ksi.model.Book">
+		insert into Book (Pk_Book_Id, Name, ISBN)
+		values (
+			#{pkBookId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR},	#{isbn,jdbcType=VARCHAR}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="com.ksi.model.Book">
+		insert into Book
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="pkBookId != null">
+				Pk_Book_Id,
+			</if>
+			<if test="name != null">
+				Name,
+			</if>
+			<if test="isbn != null">
+				ISBN,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="pkBookId != null">
+				#{pkBookId,jdbcType=INTEGER},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="isbn != null">
+				#{isbn,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.ksi.model.Book">
+		update Book
+		<set>
+			<if test="name != null">
+				Name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="isbn != null">
+				ISBN = #{isbn,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where Pk_Book_Id = #{pkBookId,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.ksi.model.Book">
+		update Book	set 
+			Name = #{name,jdbcType=VARCHAR},
+			ISBN = #{isbn,jdbcType=VARCHAR}
+		where 
+			Pk_Book_Id = #{pkBookId,jdbcType=INTEGER}
+	</update>
+
+
+	<select id="selectAuthor" parameterType="java.lang.Integer" resultMap="com.ksi.dao.AuthorMapper.BaseResultMap">
+		select <include refid="com.ksi.dao.AuthorMapper.Base_Column_List" />
+		from Author
+		where Fk_Book_Id = #{pkBookId,jdbcType=INTEGER}
+	</select>
+</mapper>
